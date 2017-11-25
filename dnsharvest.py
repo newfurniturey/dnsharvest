@@ -4,6 +4,7 @@ import argparse;
 import socket;
 import os;
 import sys;
+import re;
 import logging;
 logger = logging.getLogger();
 
@@ -21,11 +22,30 @@ def queryDomain(domain):
     
     print("%s\t%s" % (domain, ip));
 
+def isValidDomain(domain):
+    # shortest possible domain is 4 characters; ex: a.bc
+    if len(domain) < 4:
+        return False;
+
+    # we need at least 1 `.`
+    if '.' not in domain:
+        return False;
+
+    # rudimentary regex to check if it's a valid base-domain
+    # this is based on RFC-1035, except we allow domains to being with integers too
+    pattern = '^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$';
+    return re.match(pattern, domain, re.IGNORECASE) is not None;
+
 def main(options):
+    domain = options.domain;
     input_file = options.input.name;
+    
+    if isValidDomain(domain) is False:
+        logger.error("invalid domain name");
+        return 1;
 
     try:
-        processList(options.domain, input_file);
+        processList(domain, input_file);
         return 0;
     except Exception:
         logger.error("Unexpected error: %s - %s", exc.__class__.__name__, exc);
