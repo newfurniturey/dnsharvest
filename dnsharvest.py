@@ -2,6 +2,10 @@
 
 import argparse;
 import socket;
+import os;
+import sys;
+import logging;
+logger = logging.getLogger();
 
 def processList(domain, filePath):
     with open(filePath) as fp:
@@ -11,12 +15,21 @@ def processList(domain, filePath):
 
 def queryDomain(domain):
     try:
-        data = socket.gethostbyname(domain);
-        ip = repr(data);
+        ip = socket.gethostbyname(domain);
     except Exception:
         return False;
     
     print("%s\t%s" % (domain, ip));
+
+def main(options):
+    input_file = options.input.name;
+
+    try:
+        processList(options.domain, input_file);
+        return 0;
+    except Exception:
+        logger.error("Unexpected error: %s - %s", exc.__class__.__name__, exc);
+        return 1;
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Harvest the DNS');
@@ -28,4 +41,4 @@ if __name__ == '__main__':
         help='input file with subdomain names', metavar='FILE');
     args = parser.parse_args();
     
-    processList(args.domain, args.input.name);
+    sys.exit(main(args));
