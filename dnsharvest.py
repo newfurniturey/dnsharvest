@@ -6,13 +6,30 @@ import os;
 import sys;
 import re;
 import logging;
+from multiprocessing.pool import ThreadPool;
 logger = logging.getLogger();
 
 def processList(domain, filePath):
+    results = [];
     with open(filePath) as fp:
         for line in fp:
             subdomain = line.strip();
-            queryDomain('%s.%s' % (subdomain, domain));
+            result = queryDomain('%s.%s' % (subdomain, domain));
+            results.append(result);
+    
+    printResults(results);
+
+def processListP(domain, filePath):
+    with open(filePath) as fp:
+        words = fp.readlines();
+    words = [line.strip() for line in words];
+    
+    pool = ThreadPool(8);
+    results = pool.map(queryDomain, words);
+    pool.close();
+    pool.join();
+    
+    printResults(results);
 
 def queryDomain(domain):
     try:
@@ -20,8 +37,13 @@ def queryDomain(domain):
     except Exception:
         return False;
     
-    print("%s\t%s" % (domain, ip));
+    return [domain, ip];
 
+def printResults(results):
+    results = list(filter(bool, results));
+    for result in results:
+        print("%s\t%s" % (result[0], result[1]));
+    
 def isValidDomain(domain):
     # shortest possible domain is 4 characters; ex: a.bc
     if len(domain) < 4:
@@ -45,7 +67,7 @@ def main(options):
         return 1;
 
     try:
-        processList(domain, input_file);
+        processListP(domain, input_file);
         return 0;
     except Exception:
         logger.error("Unexpected error: %s - %s", exc.__class__.__name__, exc);
