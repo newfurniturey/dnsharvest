@@ -3,7 +3,7 @@ DNS Harvest
 
 **DNS Harvest** isn't anything fancy, it's a DNS dictionary bruteforce tool.
 
-Right now, it's single-threaded and limited to IPv4 and domain-existence reconnaisance. Hopefully soon it'll be expanded =]
+Right now, it's limited to IPv4 and domain-existence reconnaissance. Hopefully soon it'll be expanded =]
 
 ### Usage
 
